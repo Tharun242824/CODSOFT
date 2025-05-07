@@ -1,57 +1,59 @@
+import tkinter as tk
+from tkinter import messagebox
+
 tasks = []
 
-def add_task(task):
-    tasks.append({"task": task, "done": False})
-    print("Task added!")
+def update_task_list():
+    task_listbox.delete(0, tk.END)
+    for task in tasks:
+        status = "[✔] " if task["done"] else "[ ] "
+        task_listbox.insert(tk.END, status + task["task"])
 
-def show_tasks():
-    if not tasks:
-        print("No tasks available.")
+def add_task():
+    task_text = task_entry.get().strip()
+    if task_text == "":
+        messagebox.showwarning("Input Error", "Task cannot be empty!")
         return
-    for idx, task in enumerate(tasks):
-        status = "✔" if task["done"] else "❌"
-        print(f"{idx + 1}. [{status}] {task['task']}")
+    tasks.append({"task": task_text, "done": False})
+    update_task_list()
+    task_entry.delete(0, tk.END)
 
-def mark_done(index):
+def delete_task():
     try:
-        tasks[index - 1]["done"] = True
-        print("Task marked as done.")
+        selected_index = task_listbox.curselection()[0]
+        tasks.pop(selected_index)
+        update_task_list()
     except IndexError:
-        print("Invalid task number.")
+        messagebox.showwarning("Select Task", "Please select a task to delete.")
 
-def delete_task(index):
+def mark_done():
     try:
-        removed = tasks.pop(index - 1)
-        print(f"Deleted task: {removed['task']}")
+        selected_index = task_listbox.curselection()[0]
+        tasks[selected_index]["done"] = True
+        update_task_list()
     except IndexError:
-        print("Invalid task number.")
+        messagebox.showwarning("Select Task", "Please select a task to mark as done.")
 
-def main():
-    while True:
-        print("\n--- TO-DO LIST MENU ---")
-        print("1. Add Task")
-        print("2. Show Tasks")
-        print("3. Mark Task as Done")
-        print("4. Delete Task")
-        print("5. Exit")
+# Create GUI window
+root = tk.Tk()
+root.title("To-Do List App")
+root.geometry("400x400")
 
-        choice = input("Enter your choice (1-5): ")
+# Entry for task input
+task_entry = tk.Entry(root, width=30)
+task_entry.pack(pady=10)
 
-        if choice == "1":
-            task = input("Enter task: ")
-            add_task(task)
-        elif choice == "2":
-            show_tasks()
-        elif choice == "3":
-            index = int(input("Enter task number to mark as done: "))
-            mark_done(index)
-        elif choice == "4":
-            index = int(input("Enter task number to delete: "))
-            delete_task(index)
-        elif choice == "5":
-            print("Goodbye!")
-            break
-        else:
-            print("Invalid choice. Please enter a number from 1 to 5.")
+# Buttons
+btn_frame = tk.Frame(root)
+btn_frame.pack()
 
-main()
+tk.Button(btn_frame, text="Add Task", width=10, command=add_task).grid(row=0, column=0, padx=5)
+tk.Button(btn_frame, text="Mark Done", width=10, command=mark_done).grid(row=0, column=1, padx=5)
+tk.Button(btn_frame, text="Delete Task", width=10, command=delete_task).grid(row=0, column=2, padx=5)
+
+# Listbox to display tasks
+task_listbox = tk.Listbox(root, width=50)
+task_listbox.pack(pady=20)
+
+# Run the app
+root.mainloop()
